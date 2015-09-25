@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>ant</title>
+		<style>
+		* {
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+		}
+		</style>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="1000" height="600">
+		</canvas>
+		<script>
+		var c = document.getElementById("myCanvas");
+		var ctx = c.getContext("2d");
+		ctx.canvas.width  = window.innerWidth;
+		ctx.canvas.height = window.innerHeight;
+
+		var squareSize = 10
+		var size = {
+			x: Math.round(ctx.canvas.width / squareSize),
+			y: Math.round(ctx.canvas.height / squareSize)
+		}
+		var map = []
+		var f = {
+			x: Math.round(size.x / 2),
+			y: Math.round(size.y / 2),
+			dir: 0
+		}
+
+		initBlankMap()
+
+		// Init the map
+		function initBlankMap() {
+			for (var i = 0, l = size.x; i < l; i++) {
+				map[i] = []
+				for (var j = 0, k = size.y; j < k; j++) {
+					map[i][j] = false
+				}
+			}
+
+			for (var i = 0, l = size.x; i < l; i++) {
+				for (var j = 0, k = size.y; j < k; j++) {
+					ctx.fillStyle = (map[i][j]) ? "black" : "white"
+					ctx.fillRect(squareSize * i, squareSize * j, squareSize, squareSize)
+				}
+			}
+		}
+
+		function initRandomMap() {
+			for (var i = 0, l = size.x; i < l; i++) {
+				map[i] = []
+				for (var j = 0, k = size.y; j < k; j++) {
+					map[i][j] = (Math.random() < 0.5)
+				}
+			}
+
+			for (var i = 0, l = size.x; i < l; i++) {
+				for (var j = 0, k = size.y; j < k; j++) {
+					ctx.fillStyle = (map[i][j]) ? "black" : "white"
+					ctx.fillRect(squareSize * i, squareSize * j, squareSize, squareSize)
+				}
+			}
+		}
+
+		function initFromAscii() {
+			var ascii = [
+				"  #     #  ",
+				"   #   #   ",
+				"  #######  ",
+				" ## ### ## ",
+				"###########",
+				"# ####### #",
+				"# #     # #",
+				"   ## ##   ",
+			]
+
+			var ascii = [
+				"  #### #   # ##### ",
+				"  #  # ##  #   #   ",
+				"  #### # # #   #   ",
+				"  #  # #  ##   #   ",
+				"  #  # #   #   #   ",
+				"                   ",
+			]
+
+			var ascii = [
+				"                                                  ",
+				"  ######     ###     ######  ##     ##    ###     ",
+				" ##    ##   ## ##   ##    ## ##     ##   ## ##    ",
+				" ##        ##   ##  ##       ##     ##  ##   ##   ",
+				"  ######  ##     ## ##       ######### ##     ##  ",
+				"       ## ######### ##       ##     ## #########  ",
+				" ##    ## ##     ## ##    ## ##     ## ##     ##  ",
+				"  ######  ##     ##  ######  ##     ## ##     ##  ",
+				"                                                  ",
+			]
+
+			var ascii = [
+				"                               ",
+				"                               ",
+				"                               ",
+				"                               ",
+				"              #                ",
+				"              #                ",
+				"              #                ",
+				"                               ",
+				"                               ",
+				"                               ",
+				"                               ",
+				"                               ",
+			]
+
+			for (var i = 0, l = size.x; i < l; i++) {
+				map[i] = []
+				for (var j = 0, k = size.y; j < k; j++) {
+					map[i][j] = false
+				}
+			}
+
+			for (var originX = 0; originX < size.x; originX += ascii[0].length) {
+				for (var originY = 0; originY < size.y; originY += ascii.length) {
+					for (var i = 0; i < ascii.length; i++) {
+						for (var j = 0; j < ascii[i].length; j++) {
+							if (j + originX < size.x && i + originY < size.y) {
+								map[j + originX][i + originY] = (ascii[i].charAt(j) === "#")
+							}
+						}
+					}
+				}
+			}
+
+			for (var i = 0, l = size.x; i < l; i++) {
+				for (var j = 0, k = size.y; j < k; j++) {
+					ctx.fillStyle = (map[i][j]) ? "#aaa" : "white"
+					ctx.fillRect(squareSize * i, squareSize * j, squareSize, squareSize)
+				}
+			}
+		}
+
+		function drawMap() {
+			for (var i = 0, l = size.x; i < l; i++) {
+				for (var j = 0, k = size.y; j < k; j++) {
+					ctx.fillStyle = (map[i][j]) ? "black" : "white"
+					ctx.fillRect(squareSize * i, squareSize * j, squareSize, squareSize)
+				}
+			}
+		}
+	
+		function turnRight() {
+			switch (f.dir) {
+				case 0:
+					f.x++
+					break
+				case 1:
+					f.y++
+					break
+				case 2:
+					f.x--
+					break
+				case 3:
+					f.y--
+					break
+			}
+
+			f.dir = (f.dir + 1) % 4
+		}
+
+		function turnLeft() {
+			switch (f.dir) {
+				case 0:
+					f.x--
+					break
+				case 1:
+					f.y--
+					break
+				case 2:
+					f.x++
+					break
+				case 3:
+					f.y++
+					break
+			}
+
+			f.dir = (f.dir + 3) % 4
+		}
+
+		function move() {
+			if (map[f.x][f.y]) {
+				turnRight()
+			} else {
+				turnLeft()
+			}
+
+			// Move from a side to the other
+			if (f.x >= size.x) {
+				f.x = 0
+			} else if (f.x < 0) {
+				f.x = size.x - 1
+			}
+			if (f.y >= size.y) {
+				f.y = 0
+			} else if (f.y < 0) {
+				f.y = size.y - 1
+			}
+
+			// Change the color of the visited square
+			map[f.x][f.y] = !map[f.x][f.y]
+		}
+
+		function drawAnt() {
+			ctx.fillStyle = "blue"
+			ctx.fillRect(squareSize * f.x, squareSize * f.y, squareSize, squareSize)
+		}
+		
+		function drawSquare() {
+			ctx.fillStyle = (map[f.x][f.y]) ? "black" : "white"
+			ctx.fillRect(squareSize * f.x, squareSize * f.y, squareSize, squareSize)
+		}
+
+		function gameOfLife() {
+			var oldMap = []
+
+			for (var i = 0, l = map.length; i < l; i++) {
+				oldMap[i] = []
+				for (var j = 0, k = map[i].length; j < k; j++) {
+					oldMap[i][j] = map[i][j]
+				}
+			}
+
+			function countNeighbors(x, y) {
+				var n = 0
+				if (oldMap[(x + size.x - 1) % size.x][(y + size.y - 1) % size.y]) {
+					n++
+				}
+
+				if (oldMap[(x + size.x - 1) % size.x][(y + size.y + 1) % size.y]) {
+					n++
+				}
+				
+				if (oldMap[(x + size.x + 1) % size.x][(y + size.y - 1) % size.y]) {
+					n++
+				}
+
+				if (oldMap[(x + size.x + 1) % size.x][(y + size.y + 1) % size.y]) {
+					n++
+				}
+
+				if (oldMap[(x + size.x + 1) % size.x][y]) {
+					n++
+				}
+
+				if (oldMap[(x + size.x - 1) % size.x][y]) {
+					n++
+				}
+
+				if (oldMap[x][(y + size.y - 1) % size.y]) {
+					n++
+				}
+
+				if (oldMap[x][(y + size.y + 1) % size.y]) {
+					n++
+				}
+
+				return n
+			}
+
+			for (var i = 0, l = oldMap.length; i < l; i++) {
+				for (var j = 0, k = oldMap[i].length; j < k; j++) {
+					var n = countNeighbors(i, j)
+					if (n === 3) {
+						map[i][j] = true
+					} else if (n < 2 || n > 3) {
+						map[i][j] = false
+					}
+				}
+			}
+		}
+
+		var iteration = 0
+
+		setInterval(function () {
+			// The order is quite important as we never clear the canvas
+			drawSquare()
+			move()
+			
+			if (iteration % 20 === 0) {
+				gameOfLife()
+				drawMap()
+			}
+
+			drawAnt()
+			
+			iteration++
+		}, 0)
+
+		</script>
+	</body>
+</html>
